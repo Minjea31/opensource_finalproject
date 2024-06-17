@@ -26,7 +26,7 @@ char* my_strdup(const char* str) {
 // 연결리스트의 시작 노드
 Node* head = NULL;
 
-// 새로운 노드를 생성하고 연결리스트에 추가하는 함수
+// 새로운 노드를 생성하고 연결리스트에 추가하는 함수 (오름차순으로 정렬)
 void addPaperContent(int page, char* contents) {
     // 새로운 노드 생성
     Node* newNode = (Node*)malloc(sizeof(Node));
@@ -37,15 +37,17 @@ void addPaperContent(int page, char* contents) {
     newNode->next = NULL;
 
     // 리스트가 비어있으면 새로운 노드를 시작 노드로 설정
-    if (head == NULL) {
+    if (head == NULL || head->paperContent.page > page) {
+        newNode->next = head;
         head = newNode;
     }
     else {
-        // 리스트의 끝에 새로운 노드 추가
+        // 리스트의 적절한 위치에 새로운 노드 삽입
         Node* temp = head;
-        while (temp->next != NULL) {
+        while (temp->next != NULL && temp->next->paperContent.page < page) {
             temp = temp->next;
         }
+        newNode->next = temp->next;
         temp->next = newNode;
     }
 }

@@ -30,5 +30,11 @@
     <ClCompile Include="노드마다 text파일작성.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="text파일에 있는 정보 저장.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="파일에 있는 1개 text파일 저장.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

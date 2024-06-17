@@ -1,6 +1,12 @@
+//파일주소를 입력하면 안에 있는 text파일을 순회하면서 
+//저장할려고 했는데 일단 안됨.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
+
+#define MAX_PATH_LEN 260
 
 // ResearchPaper_contents 구조체 정의
 typedef struct {
@@ -63,7 +69,7 @@ void addPaper(char* title, char* author, int year, char* url) {
     }
 }
 
-// 논문 내용 노드를 추가하는 함수 (오름차순으로 정렬)
+// 논문 내용 노드를 추가하는 함수
 void addPaperContent(ResearchPaper* paper, int page, char* contents) {
     // 새로운 논문 내용 노드 생성
     ContentNode* newNode = (ContentNode*)malloc(sizeof(ContentNode));
@@ -74,19 +80,50 @@ void addPaperContent(ResearchPaper* paper, int page, char* contents) {
     newNode->next = NULL;
 
     // 내용 리스트가 비어있으면 새로운 내용을 시작 노드로 설정
-    if (paper->contentsHead == NULL || paper->contentsHead->paperContent.page > page) {
-        newNode->next = paper->contentsHead;
+    if (paper->contentsHead == NULL) {
         paper->contentsHead = newNode;
     }
     else {
-        // 내용 리스트의 적절한 위치에 새로운 내용 노드 삽입
+        // 내용 리스트의 끝에 새로운 내용 노드 추가
         ContentNode* temp = paper->contentsHead;
-        while (temp->next != NULL && temp->next->paperContent.page < page) {
+        while (temp->next != NULL) {
             temp = temp->next;
         }
-        newNode->next = temp->next;
         temp->next = newNode;
     }
+}
+
+// 파일에서 논문 정보를 읽어와 연결리스트에 추가하는 함수
+void readPaperFromFile(const char* filepath) {
+    FILE* file = fopen(filepath, "r");
+    if (file == NULL) {
+        printf("파일을 열 수 없습니다: %s\n", filepath);
+        return;
+    }
+
+    char title[100];
+    char author[100];
+    int year;
+    char url[100];
+    int page;
+    char contents[500];
+
+    fscanf(file, "제목: %99[^\n]\n", title);
+    fscanf(file, "저자: %99[^\n]\n", author);
+    fscanf(file, "연도: %d\n", &year);
+    fscanf(file, "주소: %99[^\n]\n", url);
+
+    addPaper(title, author, year, url);
+    ResearchPaper* currentPaper = head;
+    while (currentPaper->next != NULL) {
+        currentPaper = currentPaper->next;
+    }
+
+    while (fscanf(file, " 페이지: %d\n 내용: %499[^\n]\n", &page, contents) == 2) {
+        addPaperContent(currentPaper, page, contents);
+    }
+
+    fclose(file);
 }
 
 // 연결리스트의 모든 논문과 그 내용을 출력하는 함수
@@ -109,93 +146,46 @@ void printPapers() {
     }
 }
 
-// 논문 리스트를 파일에 저장하는 함수 (각 논문 제목으로 파일 생성)
-void savePapersToFile(const char* folderPath) {
-    ResearchPaper* paperTemp = head;
-    while (paperTemp != NULL) {
-        // 파일명을 논문 제목으로 지정
-        char filename[256]; // 적절한 길이로 설정
-        snprintf(filename, sizeof(filename), "%s/%s.txt", folderPath, paperTemp->title);
+// 특정 폴더 내의 모든 텍스트 파일을 순회하면서 논문 정보를 읽어오는 함수
+void readAllPapersFromFolder(const char* folderPath) {
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind;
+    char searchPath[MAX_PATH_LEN];
 
-        FILE* file = fopen(filename, "w");
+    snprintf(searchPath, sizeof(searchPath), "%s\\*.txt", folderPath);
+    hFind = FindFirstFile(searchPath, &findFileData);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        printf("폴더를 열 수 없습니다: %s\n", folderPath);
+        return;
+    }
+
+    do {
+        char filePath[MAX_PATH_LEN];
+        snprintf(filePath, sizeof(filePath), "%s\\%s", folderPath, findFileData.cFileName);
+        FILE* file = fopen(filePath, "r");
         if (file == NULL) {
-            printf("파일을 열 수 없습니다: %s\n", filename);
+            printf("파일을 열 수 없습니다: %s\n", filePath);
         }
         else {
-            // 파일에 논문 정보 작성
-            fprintf(file, "제목: %s\n", paperTemp->title);
-            fprintf(file, "저자: %s\n", paperTemp->author);
-            fprintf(file, "연도: %d\n", paperTemp->year);
-            fprintf(file, "주소: %s\n", paperTemp->url);
-
-            ContentNode* contentTemp = paperTemp->contentsHead;
-            while (contentTemp != NULL) {
-                fprintf(file, "  페이지: %d\n", contentTemp->paperContent.page);
-                fprintf(file, "  내용: %s\n", contentTemp->paperContent.contents);
-                contentTemp = contentTemp->next;
-            }
-
             fclose(file);
+            readPaperFromFile(filePath);
         }
-        printf("파일 저장 완료: %s\n", filename);
-        paperTemp = paperTemp->next;
-    }
+    } while (FindNextFile(hFind, &findFileData) != 0);
+
+    FindClose(hFind);
 }
 
 // 메인 함수
 int main() {
-    char title[100];
-    char author[100];
-    int year;
-    char url[100];
-    int page;
-    char contents[500];
-    const char* folderPath = "C:\\Users\\kimmi\\Desktop\\논문정리"; // 저장할 폴더 경로
+    const char* folderPath = "C:\\Users\\kimmi\\Desktop\\논문정리\\"; // 순회할 폴더 경로
+    printf("검색 경로: %s\n", folderPath);
 
-    while (1) {
-        printf("논문 제목 (exit 입력시 종료): ");
-        scanf("%99s", title);
-        if (strcmp(title, "exit") == 0) {
-            break;
-        }
+    // 폴더 내의 모든 텍스트 파일을 읽어와서 논문 정보를 저장
+    readAllPapersFromFolder(folderPath);
 
-        printf("저자: ");
-        scanf("%99s", author);
-
-        printf("연도: ");
-        scanf("%d", &year);
-
-        printf("URL 주소: ");
-        scanf("%99s", url);
-
-        addPaper(title, author, year, url);
-
-        ResearchPaper* currentPaper = head;
-        while (currentPaper->next != NULL) {
-            currentPaper = currentPaper->next;
-        }
-
-        while (1) {
-            printf("페이지를 입력하시오 (종료: -1): ");
-            scanf("%d", &page);
-            if (page == -1) {
-                break;
-            }
-
-            getchar(); // 버퍼 비우기
-            printf("내용을 입력하시오: ");
-            fgets(contents, sizeof(contents), stdin);
-            contents[strcspn(contents, "\n")] = 0; // fgets로 입력받은 문자열에서 개행문자를 제거
-
-            addPaperContent(currentPaper, page, contents);
-        }
-    }
-
+    // 논문 리스트 출력
     printf("\n논문 리스트:\n");
     printPapers();
-
-    // 각 논문을 파일로 저장
-    savePapersToFile(folderPath);
 
     return 0;
 }
