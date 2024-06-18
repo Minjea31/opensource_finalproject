@@ -15,25 +15,31 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="구조체_논문.c">
+    <ClCompile Include="구조체_연결리스트_논문.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="text파일에 저장.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="구조체 합본.c">
+    <ClCompile Include="구조체_연결리스트 합본.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="구조체_논문내용.c">
+    <ClCompile Include="구조체_연결리스트_논문내용.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="노드마다 text파일작성.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="text파일에 있는 정보 저장.c">
+    <ClCompile Include="폴더의 text파일 모두 저장.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="파일에 있는 1개 text파일 저장.c">
+    <ClCompile Include="폴더 text파일 1개 저장.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="불러와서 수정.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="논문 제목으로 불러오기.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
