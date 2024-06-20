@@ -1,3 +1,5 @@
+//오름차순으로 논문 내용 정렬
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

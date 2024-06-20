@@ -42,5 +42,11 @@
     <ClCompile Include="논문 제목으로 불러오기.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="합본.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="폴더 확인.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

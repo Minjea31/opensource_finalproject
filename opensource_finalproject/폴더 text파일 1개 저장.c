@@ -144,7 +144,7 @@ void printPapers() {
 
 // 메인 함수
 int main() {
-    const char* filePath1 = "C:\\Users\\kimmi\\Desktop\\논문정리\\김민재.txt"; // 첫 번째 텍스트 파일 경로
+    const char* filePath1 = "C:\\Users\\kimmi\\Desktop\\논문정리\\이승준.txt"; // 첫 번째 텍스트 파일 경로
 
     // 각 텍스트 파일에서 논문 정보를 읽어와서 연결리스트에 저장
     readPaperFromFile(filePath1);

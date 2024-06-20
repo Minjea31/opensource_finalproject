@@ -1,13 +1,59 @@
-//파일주소를 입력하면 안에 있는 text파일을 순회하면서 
-//저장할려고 했는데 일단 안됨.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <io.h>
 #include <windows.h>
+#include <limits.h>
 
+#pragma warning(disable : 4996)
 
-#define MAX_PATH_LEN 260
+#define DIRECTORY 1
+#define FILE_TYPE 0
+
+struct _finddata_t fd;
+
+int isDirectory() {
+    if (fd.attrib & _A_SUBDIR)
+        return DIRECTORY;
+    else
+        return FILE_TYPE;
+}
+
+void FileSearch(const char* path, char*** fileNames, int* fileCount) {
+    intptr_t handle;
+    int check = 0;
+    char searchPath[_MAX_PATH];
+
+    snprintf(searchPath, sizeof(searchPath), "%s\\*.*", path);
+
+    if ((handle = _findfirst(searchPath, &fd)) == -1) {
+        return;
+    }
+
+    do {
+        char filePath[_MAX_PATH];
+        snprintf(filePath, sizeof(filePath), "%s\\%s", path, fd.name);
+
+        check = isDirectory();    // 디렉토리 판별
+
+        if (check == DIRECTORY && fd.name[0] != '.') { //<.>, <..>이 아닌 디렉토리 
+            FileSearch(filePath, fileNames, fileCount);    // 하위 디렉토리 검색
+        }
+        else if (check == FILE_TYPE && fd.size != 0 && fd.name[0] != '.') {
+            // .txt 확장자 제거
+            char* dot = strrchr(fd.name, '.');
+            if (dot && strcmp(dot, ".txt") == 0) {
+                *dot = '\0'; // .txt 제거
+            }
+            // 파일 이름 저장
+            *fileNames = realloc(*fileNames, (*fileCount + 1) * sizeof(char*));
+            (*fileNames)[*fileCount] = strdup(fd.name);
+            (*fileCount)++;
+        }
+    } while (_findnext(handle, &fd) == 0);
+
+    _findclose(handle);
+}
 
 // ResearchPaper_contents 구조체 정의
 typedef struct {
@@ -16,7 +62,7 @@ typedef struct {
 } ResearchPaper_contents;
 
 // ResearchPaper 구조체 정의
-typedef struct {
+typedef struct ResearchPaper {
     char* title;
     char* author;
     int year;
@@ -96,7 +142,7 @@ void addPaperContent(ResearchPaper* paper, int page, char* contents) {
 
 // 파일에서 논문 정보를 읽어와 연결리스트에 추가하는 함수
 void readPaperFromFile(const char* filepath) {
-    FILE* file = fopen(filepath, "r");
+    FILE* file = fopen(filepath, "r");  // file 포인터를 제대로 선언합니다.
     if (file == NULL) {
         printf("파일을 열 수 없습니다: %s\n", filepath);
         return;
@@ -151,7 +197,7 @@ void printPapers() {
 void readAllPapersFromFolder(const char* folderPath) {
     WIN32_FIND_DATA findFileData;
     HANDLE hFind;
-    char searchPath[MAX_PATH_LEN];
+    char searchPath[MAX_PATH];
 
     snprintf(searchPath, sizeof(searchPath), "%s\\*.txt", folderPath);
     hFind = FindFirstFile(searchPath, &findFileData);
@@ -161,16 +207,9 @@ void readAllPapersFromFolder(const char* folderPath) {
     }
 
     do {
-        char filePath[MAX_PATH_LEN];
+        char filePath[MAX_PATH];
         snprintf(filePath, sizeof(filePath), "%s\\%s", folderPath, findFileData.cFileName);
-        FILE* file = fopen(filePath, "r");
-        if (file == NULL) {
-            printf("파일을 열 수 없습니다: %s\n", filePath);
-        }
-        else {
-            fclose(file);
-            readPaperFromFile(filePath);
-        }
+        readPaperFromFile(filePath);
     } while (FindNextFile(hFind, &findFileData) != 0);
 
     FindClose(hFind);
@@ -178,11 +217,22 @@ void readAllPapersFromFolder(const char* folderPath) {
 
 // 메인 함수
 int main() {
-    const char* folderPath = "C:\\Users\\kimmi\\Desktop\\논문정리\\"; // 순회할 폴더 경로
-    printf("검색 경로: %s\n", folderPath);
+    const char* folderPath = "C:\\Users\\kimmi\\Desktop\\논문정리\\";
+    char** fileNames = NULL;
+    int fileCount = 0;
 
-    // 폴더 내의 모든 텍스트 파일을 읽어와서 논문 정보를 저장
-    readAllPapersFromFolder(folderPath);
+    // 파일 이름 검색
+    FileSearch(folderPath, &fileNames, &fileCount);
+
+    // 파일 이름 출력 및 논문 정보 읽기
+    for (int i = 0; i < fileCount; i++) {
+        char filePath[MAX_PATH];
+        snprintf(filePath, sizeof(filePath), "%s\\%s.txt", folderPath, fileNames[i]);
+        readPaperFromFile(filePath);
+
+        free(fileNames[i]); // 메모리 해제
+    }
+    free(fileNames); // 메모리 해제
 
     // 논문 리스트 출력
     printf("\n논문 리스트:\n");

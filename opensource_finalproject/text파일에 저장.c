@@ -147,19 +147,23 @@ int main() {
 
     while (1) {
         printf("논문 제목 (exit 입력시 종료): ");
-        scanf("%99s", title);
+        fgets(title, sizeof(title), stdin);
+        title[strcspn(title, "\n")] = '\0'; // 개행 문자 제거
         if (strcmp(title, "exit") == 0) {
             break;
         }
 
         printf("저자: ");
-        scanf("%99s", author);
+        fgets(author, sizeof(author), stdin);
+        author[strcspn(author, "\n")] = '\0'; // 개행 문자 제거
 
         printf("연도: ");
         scanf("%d", &year);
+        getchar(); // 버퍼 비우기
 
         printf("URL 주소: ");
-        scanf("%99s", url);
+        fgets(url, sizeof(url), stdin);
+        url[strcspn(url, "\n")] = '\0'; // 개행 문자 제거
 
         addPaper(title, author, year, url);
 
@@ -182,6 +186,8 @@ int main() {
 
             addPaperContent(currentPaper, page, contents);
         }
+
+        getchar(); // 페이지 입력 후 버퍼 비우기
     }
 
     printf("\n논문 리스트:\n");

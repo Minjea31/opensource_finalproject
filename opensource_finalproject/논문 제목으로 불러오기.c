@@ -1,6 +1,3 @@
-//논문 제목을 입력하면 정보를 불러오고 
-//없는 논문의 제목을 입력할경우 다시 입력받도록 함.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +24,19 @@ typedef struct ContentNode {
     struct ContentNode* next;
 } ContentNode;
 
+// 함수 프로토타입 선언
+void addPaper(char* title, char* author, int year, char* url);
+void addPaperContent(ResearchPaper* paper, int page, char* contents);
+void readPaperFromFile(const char* filepath);
+void editPaper(ResearchPaper* paper);
+void addContentToPaper(ResearchPaper* paper);
+void readAndEditPaper();
+void printPapers();
+char* my_strdup(const char* str);
+
+// ResearchPaper 연결리스트의 시작 노드
+ResearchPaper* head = NULL;
+
 // 문자열을 복사하는 함수
 char* my_strdup(const char* str) {
     char* copy = (char*)malloc(strlen(str) + 1);
@@ -35,9 +45,6 @@ char* my_strdup(const char* str) {
     }
     return copy;
 }
-
-// 논문 연결리스트의 시작 노드
-ResearchPaper* head = NULL;
 
 // 새로운 논문 노드를 생성하고 연결리스트에 추가하는 함수
 void addPaper(char* title, char* author, int year, char* url) {
@@ -81,25 +88,32 @@ void addPaperContent(ResearchPaper* paper, int page, char* contents) {
         paper->contentsHead = newNode;
     }
     else {
-        // 내용 리스트의 끝에 새로운 내용 노드 추가
+        // 내용 리스트의 적절한 위치를 찾아서 삽입
         ContentNode* temp = paper->contentsHead;
-        while (temp->next != NULL) {
+        ContentNode* prev = NULL;
+
+        while (temp != NULL && temp->paperContent.page < page) {
+            prev = temp;
             temp = temp->next;
         }
-        temp->next = newNode;
+
+        if (prev == NULL) {
+            newNode->next = paper->contentsHead;
+            paper->contentsHead = newNode;
+        }
+        else {
+            newNode->next = prev->next;
+            prev->next = newNode;
+        }
     }
 }
 
 // 파일에서 논문 정보를 읽어와 연결리스트에 추가하는 함수
 void readPaperFromFile(const char* filepath) {
     FILE* file = fopen(filepath, "r");
-    while (file == NULL) {
+    if (file == NULL) {
         printf("파일을 열 수 없습니다: %s\n", filepath);
-        printf("다시 입력하세요: ");
-        char new_filepath[200];
-        fgets(new_filepath, sizeof(new_filepath), stdin);
-        new_filepath[strcspn(new_filepath, "\n")] = '\0'; // 개행 문자 제거
-        file = fopen(new_filepath, "r");
+        return;
     }
 
     char title[100];
@@ -117,52 +131,6 @@ void readPaperFromFile(const char* filepath) {
 
     // 새로운 논문 추가
     addPaper(title, author, year, url);
-    ResearchPaper* currentPaper = head;
-    while (currentPaper->next != NULL) {
-        currentPaper = currentPaper->next;
-    }
-
-    // 페이지와 내용 읽어서 논문 내용에 추가
-    while (fscanf(file, " 페이지: %d\n 내용: %499[^\n]\n", &page, contents) == 2) {
-        addPaperContent(currentPaper, page, contents);
-    }
-
-    fclose(file);
-}
-
-// 특정 제목의 논문 파일에서 정보를 읽어와 연결리스트에 추가하는 함수
-void readPaperByTitle(const char* title) {
-    // 파일 경로 생성
-    char filepath[200];
-    sprintf(filepath, "C:\\Users\\kimmi\\Desktop\\논문정리\\%s.txt", title);
-
-    // 파일 열기 시도
-    FILE* file = fopen(filepath, "r");
-    while (file == NULL) {
-        printf("파일을 열 수 없습니다: %s\n", filepath);
-        printf("다시 입력하세요: ");
-        char new_title[100];
-        fgets(new_title, sizeof(new_title), stdin);
-        new_title[strcspn(new_title, "\n")] = '\0'; // 개행 문자 제거
-        sprintf(filepath, "C:\\Users\\kimmi\\Desktop\\논문정리\\%s.txt", new_title);
-        file = fopen(filepath, "r");
-    }
-
-    char file_title[100];
-    char author[100];
-    int year;
-    char url[100];
-    int page;
-    char contents[500];
-
-    // 제목, 저자, 연도, 주소 읽기
-    fscanf(file, "제목: %99[^\n]\n", file_title);
-    fscanf(file, "저자: %99[^\n]\n", author);
-    fscanf(file, "연도: %d\n", &year);
-    fscanf(file, "주소: %99[^\n]\n", url);
-
-    // 새로운 논문 추가
-    addPaper(file_title, author, year, url);
     ResearchPaper* currentPaper = head;
     while (currentPaper->next != NULL) {
         currentPaper = currentPaper->next;
@@ -215,6 +183,10 @@ void editPaper(ResearchPaper* paper) {
         free(paper->url);
         paper->url = my_strdup(input);
     }
+
+    // 내용 추가
+    printf("내용을 추가합니다.\n");
+    addContentToPaper(paper);
 }
 
 // 특정 논문 내용을 추가하는 함수
@@ -226,7 +198,7 @@ void addContentToPaper(ResearchPaper* paper) {
         // 페이지 번호 입력
         printf("추가할 페이지 번호(종료: -1): ");
         scanf("%d", &page);
-        getchar(); // scanf
+        getchar(); // scanf 후 개행 문자 처리
         if (page == -1) {
             break;
         }
@@ -241,61 +213,45 @@ void addContentToPaper(ResearchPaper* paper) {
     }
 }
 
-// 논문 내용의 페이지 순서대로 정렬하는 함수
-void sortPaperContents(ResearchPaper* paper) {
-    if (paper->contentsHead == NULL) {
-        return;
-    }
+// 파일에서 논문 정보를 읽고 수정할 수 있게 하는 함수
+void readAndEditPaper() {
+    while (1) {
+        char title[100];
+        printf("수정할 논문의 제목을 입력하세요 (종료를 입력하면 프로그램이 종료됩니다): ");
+        fgets(title, sizeof(title), stdin);
+        title[strcspn(title, "\n")] = '\0'; // 개행 문자 제거
 
-    ContentNode* sorted = NULL;
-
-    ContentNode* current = paper->contentsHead;
-    while (current != NULL) {
-        ContentNode* next = current->next;
-        if (sorted == NULL || sorted->paperContent.page > current->paperContent.page) {
-            current->next = sorted;
-            sorted = current;
+        // 종료 조건 확인
+        if (strcmp(title, "종료") == 0) {
+            break;
         }
-        else {
-            ContentNode* temp = sorted;
-            while (temp->next != NULL && temp->next->paperContent.page <= current->paperContent.page) {
-                temp = temp->next;
+
+        // 파일 경로 생성
+        char filepath[200];
+        sprintf(filepath, "C:\\Users\\kimmi\\Desktop\\논문정리\\%s.txt", title);
+
+        // 파일 열기 시도
+        FILE * file = fopen(filepath, "r");
+        if (file == NULL) {
+            printf("파일을 열 수 없습니다: %s\n", filepath);
+            printf("다시 입력하거나 '종료'를 입력하세요.\n");
+            continue;
+        }
+        fclose(file);
+
+        // 파일에서 논문 정보를 읽어서 연결리스트에 추가
+        readPaperFromFile(filepath);
+
+        // 리스트에서 해당 논문을 찾아 수정
+        ResearchPaper* paperTemp = head;
+        while (paperTemp != NULL) {
+            if (strcmp(paperTemp->title, title) == 0) {
+                editPaper(paperTemp); // 논문 수정
+                break;
             }
-            current->next = temp->next;
-            temp->next = current;
+            paperTemp = paperTemp->next;
         }
-        current = next;
     }
-    paper->contentsHead = sorted;
-}
-
-// 특정 논문을 선택하여 수정 및 내용을 추가할 수 있도록 하는 함수
-void selectAndEditPaper() {
-    char title[100];
-    printf("수정할 논문의 제목을 입력하세요: ");
-    fgets(title, sizeof(title), stdin);
-    title[strcspn(title, "\n")] = '\0'; // 개행 문자 제거
-
-    // 입력된 제목의 논문이 리스트에 있는지 확인
-    ResearchPaper* paperTemp = head;
-    while (paperTemp != NULL) {
-        if (strcmp(paperTemp->title, title) == 0) {
-            editPaper(paperTemp); // 논문 수정
-
-            char choice;
-            printf("내용을 추가하시겠습니까? (y/n): ");
-            scanf(" %c", &choice);
-            getchar(); // scanf로 남은 개행 문자 처리
-            if (choice == 'y' || choice == 'Y') {
-                addContentToPaper(paperTemp); // 내용 추가
-                sortPaperContents(paperTemp); // 내용 추가 후 정렬
-            }
-            return;
-        }
-        paperTemp = paperTemp->next;
-    }
-
-    printf("제목에 해당하는 논문을 찾을 수 없습니다.\n");
 }
 
 // 연결리스트의 모든 논문과 그 내용을 출력하는 함수
@@ -320,21 +276,8 @@ void printPapers() {
 
 // 메인 함수
 int main() {
-    char title[100];
-    printf("찾을 논문의 제목을 입력하세요: ");
-    fgets(title, sizeof(title), stdin);
-    title[strcspn(title, "\n")] = '\0'; // 개행 문자 제거
-
-    // 입력된 제목의 논문 파일에서 정보를 읽어와 연결리스트에 추가
-    readPaperByTitle(title);
-
-    // 논문 리스트 출력
-    printf("\n논문 리스트:\n");
-    printPapers();
-
-    // 논문 수정 및 내용 추가 기능
-    printf("\n논문 수정 및 내용 추가:\n");
-    selectAndEditPaper();
+    // 논문 수정 기능
+    readAndEditPaper();
 
     // 수정 후 논문 리스트 출력
     printf("\n수정된 논문 리스트:\n");
