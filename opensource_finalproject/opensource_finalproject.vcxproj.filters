@@ -48,5 +48,8 @@
     <ClCompile Include="폴더 확인.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="링크 이동 .c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
