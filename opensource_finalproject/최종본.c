@@ -14,17 +14,18 @@
 typedef struct 
 {
     int page;
-    char* keywords; // 키워드 추가
+    char* keywords; // 키워드
 } ResearchPaper_contents;
 
 // ResearchPaper 구조체 정의
 typedef struct ResearchPaper 
 {
-    char* title;
-    char* author;
-    int year;
-    char* url;
-    struct ContentNode* contentsHead; // 논문 내용의 연결리스트의 시작 노드
+    char* title; //제목
+    char* author; //저자
+    int year; //연도
+    char* url; //주소
+    // 논문 내용의 연결리스트의 시작 노드
+    struct ContentNode* contentsHead;
     struct ResearchPaper* next;
 } ResearchPaper;
 
@@ -71,7 +72,6 @@ void addPaper(char* title, char* author, int year, char* url)
     // 새로운 논문 노드 생성
     ResearchPaper* newPaper = (ResearchPaper*)malloc(sizeof(ResearchPaper));
 
-    // ResearchPaper 값 설정
     newPaper->title = my_strdup(title);
     newPaper->author = my_strdup(author);
     newPaper->year = year;
@@ -102,9 +102,8 @@ void addPaperContent(ResearchPaper* paper, int page, char* keywords)
     // 새로운 논문 내용 노드 생성
     ContentNode* newNode = (ContentNode*)malloc(sizeof(ContentNode));
 
-    // ResearchPaper_contents 값 설정
     newNode->paperContent.page = page;
-    newNode->paperContent.keywords = my_strdup(keywords); // 키워드 추가
+    newNode->paperContent.keywords = my_strdup(keywords);
     newNode->next = NULL;
 
     // 내용 리스트가 비어있으면 새로운 내용을 시작 노드로 설정
@@ -131,9 +130,9 @@ void readPaperFromFile(const char* filepath)
     if (file == NULL) 
     {
         clearConsole();
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("파일을 열 수 없습니다: %s\n", filepath);
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
         return;
     }
 
@@ -142,7 +141,7 @@ void readPaperFromFile(const char* filepath)
     int year;
     char url[300];
     int page;
-    char keywords[200]; // 키워드 추가
+    char keywords[200];
 
     fscanf(file, "제목: %99[^\n]\n", title);
     fscanf(file, "저자: %99[^\n]\n", author);
@@ -176,24 +175,24 @@ void deletePaperFile(const char* title, const char* folderPath)
         if (remove(filePath) != 0) 
         {
             clearConsole();
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m"); 
             printf("파일을 삭제할 수 없습니다: %s\n", filePath);
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
         }
         else 
         {
             clearConsole();
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m"); 
             printf("파일 삭제 완료: %s\n", filePath);
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
         }
     }
     else 
     {
         clearConsole();
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("파일이 존재하지 않습니다: %s\n", filePath);
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
     }
 }
 
@@ -201,11 +200,11 @@ void editPaper(ResearchPaper* paper)
 {
     char input[300];
     int year;
-    char temp[300]; // 임시 배열
+    char temp[300]; 
 
     printf("제목(%s): ", paper->title);
     fgets(input, sizeof(input), stdin);
-    input[strcspn(input, "\n")] = '\0'; // Remove newline character
+    input[strcspn(input, "\n")] = '\0'; 
     if (strcmp(input, "") != 0) 
     {
         // 제목을 수정하면 기존 파일 삭제 후 새로운 파일 생성
@@ -216,7 +215,7 @@ void editPaper(ResearchPaper* paper)
 
     printf("저자(%s): ", paper->author);
     fgets(input, sizeof(input), stdin);
-    input[strcspn(input, "\n")] = '\0'; // Remove newline character
+    input[strcspn(input, "\n")] = '\0'; 
     if (strcmp(input, "") != 0) 
     {
         free(paper->author);
@@ -225,7 +224,7 @@ void editPaper(ResearchPaper* paper)
 
     printf("연도(%d): ", paper->year);
     fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0'; // Remove newline character
+    temp[strcspn(temp, "\n")] = '\0'; 
     if (strcmp(temp, "") != 0) 
     {
         sscanf(temp, "%d", &year);
@@ -234,7 +233,7 @@ void editPaper(ResearchPaper* paper)
 
     printf("주소(%s): ", paper->url);
     fgets(input, sizeof(input), stdin);
-    input[strcspn(input, "\n")] = '\0'; // Remove newline character
+    input[strcspn(input, "\n")] = '\0'; 
     if (strcmp(input, "") != 0) 
     {
         free(paper->url);
@@ -253,11 +252,11 @@ void editPaper(ResearchPaper* paper)
     // 페이지 및 키워드 삭제
     while (1) 
     {
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("저장된 페이지 및 키워드를 삭제하시겠습니까? (y/n): ");
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
         fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0'; // Remove newline character
+        input[strcspn(input, "\n")] = '\0'; 
         if (strcmp(input, "y") != 0 && strcmp(input, "Y") != 0) 
         {
             break;
@@ -265,7 +264,7 @@ void editPaper(ResearchPaper* paper)
 
         printf("삭제할 페이지 번호(종료: -1): ");
         fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0'; // Remove newline character
+        input[strcspn(input, "\n")] = '\0'; 
         if (strcmp(input, "-1") == 0) 
         {
             break;
@@ -305,11 +304,11 @@ void editPaper(ResearchPaper* paper)
     // 페이지 및 키워드 수정 또는 추가
     while (1) 
     {
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("기존 내용을 수정하시겠습니까? (y/n): ");
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
         fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0'; // Remove newline character
+        input[strcspn(input, "\n")] = '\0'; 
         if (strcmp(input, "y") != 0 && strcmp(input, "Y") != 0) 
         {
             break;
@@ -317,7 +316,7 @@ void editPaper(ResearchPaper* paper)
 
         printf("수정할 페이지 번호(종료: -1): ");
         fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0'; // Remove newline character
+        input[strcspn(input, "\n")] = '\0'; 
         if (strcmp(input, "-1") == 0) 
         {
             break;
@@ -333,7 +332,7 @@ void editPaper(ResearchPaper* paper)
                 // 해당 페이지의 키워드 수정
                 printf("페이지 %d의 키워드(%s): ", contentTemp->paperContent.page, contentTemp->paperContent.keywords);
                 fgets(input, sizeof(input), stdin);
-                input[strcspn(input, "\n")] = '\0'; // Remove newline character
+                input[strcspn(input, "\n")] = '\0'; 
                 if (strcmp(input, "") != 0) 
                 {
                     free(contentTemp->paperContent.keywords);
@@ -348,12 +347,12 @@ void editPaper(ResearchPaper* paper)
         // 입력받은 페이지 번호에 해당하는 노드가 없는 경우, 새로운 페이지 및 키워드 추가
         if (contentTemp == NULL) 
         {
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m"); 
             printf("페이지 %d를 찾을 수 없습니다. 새로운 페이지 및 키워드를 추가합니다.\n", editPage);
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
             printf("추가할 키워드: ");
             fgets(input, sizeof(input), stdin);
-            input[strcspn(input, "\n")] = '\0'; // Remove newline character
+            input[strcspn(input, "\n")] = '\0'; 
 
             addPaperContent(paper, editPage, input);
         }
@@ -367,13 +366,13 @@ void editPaper(ResearchPaper* paper)
 void addContentToPaper(ResearchPaper* paper) 
 {
     int page;
-    char keywords[200]; // 키워드 추가
+    char keywords[200];
 
     while (1) 
     {
         printf("추가할 페이지 번호(-1 입력시 종료): ");
         scanf("%d", &page);
-        getchar(); // 입력 버퍼에서 '\n' 제거
+        getchar(); 
 
         if (page == -1) 
         {
@@ -382,12 +381,12 @@ void addContentToPaper(ResearchPaper* paper)
 
         printf("페이지 %d의 키워드: ", page);
         fgets(keywords, sizeof(keywords), stdin);
-        keywords[strcspn(keywords, "\n")] = '\0'; // Remove newline character
+        keywords[strcspn(keywords, "\n")] = '\0'; 
 
         addPaperContent(paper, page, keywords);
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("페이지 %d에 키워드 '%s' 추가 완료.\n", page, keywords);
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
     }
 }
 
@@ -425,6 +424,7 @@ void sortPaperContents(ResearchPaper* paper)
     paper->contentsHead = sorted;
 }
 
+//논문 내용 삭제 함수
 void removeContentFromPaper(ResearchPaper* paper, int page) 
 {
     ContentNode* current = paper->contentsHead;
@@ -445,17 +445,17 @@ void removeContentFromPaper(ResearchPaper* paper, int page)
             }
             free(current->paperContent.keywords);
             free(current);
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m"); 
             printf("페이지 %d가 삭제되었습니다.\n", page);
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
             return;
         }
         prev = current;
         current = current->next;
     }
-    setConsoleTextColor("\033[31m"); // 빨간색
+    setConsoleTextColor("\033[31m"); 
     printf("페이지 %d를 찾을 수 없습니다.\n", page);
-    setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+    setConsoleTextColor("\033[0m"); 
 }
 
 
@@ -465,7 +465,7 @@ void selectAndEditPaper()
     char title[100];
     printf("수정할 논문의 제목을 입력하세요: ");
     fgets(title, sizeof(title), stdin);
-    title[strcspn(title, "\n")] = '\0'; // Remove newline character
+    title[strcspn(title, "\n")] = '\0'; 
 
     ResearchPaper* paperTemp = head;
     while (paperTemp != NULL) 
@@ -476,17 +476,17 @@ void selectAndEditPaper()
             editPaper(paperTemp);
 
             // 추가할 내용 입력
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m"); 
             printf("추가할 내용을 입력하시겠습니까? (y/n): ");
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
             char addMore[3];
             fgets(addMore, sizeof(addMore), stdin);
-            addMore[strcspn(addMore, "\n")] = '\0'; // Remove newline character
+            addMore[strcspn(addMore, "\n")] = '\0'; 
 
             if (strcmp(addMore, "y") == 0 || strcmp(addMore, "Y") == 0) 
             {
                 addContentToPaper(paperTemp);
-                sortPaperContents(paperTemp); // 추가된 내용 정렬
+                sortPaperContents(paperTemp); 
             }
             clearConsole();
             return;
@@ -494,9 +494,9 @@ void selectAndEditPaper()
         paperTemp = paperTemp->next;
     }
     clearConsole();
-    setConsoleTextColor("\033[31m"); // 빨간색
+    setConsoleTextColor("\033[31m"); 
     printf("제목에 해당하는 논문을 찾을 수 없습니다.\n");
-    setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+    setConsoleTextColor("\033[0m"); 
 }
 
 // 특정 논문을 제목으로 찾아 출력하는 함수
@@ -516,7 +516,7 @@ void printPaperByTitle(const char* title)
             while (contentTemp != NULL) 
             {
                 printf("페이지: %d\n", contentTemp->paperContent.page);
-                printf("키워드: %s\n", contentTemp->paperContent.keywords); // 키워드 출력 추가
+                printf("키워드: %s\n", contentTemp->paperContent.keywords); 
                 contentTemp = contentTemp->next;
             }
             return;
@@ -524,19 +524,21 @@ void printPaperByTitle(const char* title)
         paperTemp = paperTemp->next;
     }
     clearConsole();
-    setConsoleTextColor("\033[31m"); // 빨간색
+    setConsoleTextColor("\033[31m"); 
     printf("제목에 해당하는 논문을 찾을 수 없습니다.\n");
-    setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+    setConsoleTextColor("\033[0m"); 
 }
 
+
+//모든 논문 출력 함수
 void printAllPapers() 
 {
     if (head == NULL) 
     {
         clearConsole();
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("저장된 논문이 없습니다.\n");
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
         return;
     }
 
@@ -552,7 +554,7 @@ void printAllPapers()
         while (contentTemp != NULL) 
         {
             printf("페이지: %d\n", contentTemp->paperContent.page);
-            printf("키워드: %s\n", contentTemp->paperContent.keywords); // 키워드 출력 추가
+            printf("키워드: %s\n", contentTemp->paperContent.keywords); 
             contentTemp = contentTemp->next;
         }
         printf("\n");
@@ -569,9 +571,9 @@ void writePaperToFile(const ResearchPaper* paper, const char* folderPath)
     FILE* file = fopen(filePath, "w");
     if (file == NULL) 
     {
-        setConsoleTextColor("\033[31m"); // 빨간색
+        setConsoleTextColor("\033[31m"); 
         printf("파일을 열 수 없습니다: %s\n", filePath);
-        setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+        setConsoleTextColor("\033[0m"); 
         return;
     }
 
@@ -640,7 +642,7 @@ void displayMenu()
         printf("==========================\n");
         printf("선택: ");
         scanf("%d", &choice);
-        getchar(); // consume the newline character left by scanf
+        getchar(); 
         switch (choice) 
         {
         case 1: 
@@ -656,19 +658,19 @@ void displayMenu()
 
             printf("제목: ");
             fgets(title, sizeof(title), stdin);
-            title[strcspn(title, "\n")] = '\0'; // Remove newline character
+            title[strcspn(title, "\n")] = '\0'; 
 
             printf("저자: ");
             fgets(author, sizeof(author), stdin);
-            author[strcspn(author, "\n")] = '\0'; // Remove newline character
+            author[strcspn(author, "\n")] = '\0'; 
 
             printf("연도: ");
             scanf("%d", &year);
-            getchar(); // consume the newline character left by scanf
+            getchar(); 
 
             printf("주소: ");
             fgets(url, sizeof(url), stdin);
-            url[strcspn(url, "\n")] = '\0'; // Remove newline character
+            url[strcspn(url, "\n")] = '\0'; 
 
             addPaper(title, author, year, url);
 
@@ -682,7 +684,7 @@ void displayMenu()
             {
                 printf("추가할 페이지 번호(종료: -1): ");
                 scanf("%d", &page);
-                getchar(); // consume the newline character left by scanf
+                getchar(); 
                 if (page == -1) 
                 {
                     clearConsole();
@@ -691,7 +693,7 @@ void displayMenu()
 
                 printf("추가할 키워드: ");
                 fgets(keywords, sizeof(keywords), stdin);
-                keywords[strcspn(keywords, "\n")] = '\0'; // Remove newline character
+                keywords[strcspn(keywords, "\n")] = '\0';
 
                 addPaperContent(currentPaper, page, keywords);
             }
@@ -711,7 +713,7 @@ void displayMenu()
             char title[100];
             printf("출력할 논문의 제목을 입력하세요: ");
             fgets(title, sizeof(title), stdin);
-            title[strcspn(title, "\n")] = '\0'; // Remove newline character
+            title[strcspn(title, "\n")] = '\0'; 
 
             printPaperByTitle(title);
             break;
@@ -725,16 +727,16 @@ void displayMenu()
         case 5:
         {
             clearConsole();
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m"); 
             printf("종료했습니다.");
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
             return;
         }
         default:
         {
-            setConsoleTextColor("\033[31m"); // 빨간색
+            setConsoleTextColor("\033[31m");
             printf("올바른 번호를 선택하세요.\n");
-            setConsoleTextColor("\033[0m"); // 기본 색상(흰색)
+            setConsoleTextColor("\033[0m"); 
         }
         }
     }
