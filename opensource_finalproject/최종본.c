@@ -49,7 +49,7 @@ char* my_strdup(const char* str)
     {
         strcpy(copy, str);
     }
-    return copy;
+    return copy;    
 }
 
 void openLink(const char* url) 
